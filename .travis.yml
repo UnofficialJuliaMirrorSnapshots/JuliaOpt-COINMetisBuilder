@@ -1,0 +1,40 @@
+language: julia
+os:
+  - linux
+julia:
+  - 1.0
+notifications:
+  email: false
+git:
+  depth: 99999999
+cache:
+  timeout: 1000
+  directories:
+    - downloads
+env:
+  global:
+    - BINARYBUILDER_DOWNLOADS_CACHE=downloads
+    - BINARYBUILDER_AUTOMATIC_APPLE=true
+sudo: required
+
+# Before anything else, get the latest versions of things
+before_script:
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="BinaryProvider", url="https://github.com/JuliaPackaging/BinaryProvider.jl"))'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="BinaryBuilder", url="https://github.com/JuliaPackaging/BinaryBuilder.jl")); Pkg.build()'
+
+script:
+  - julia build_tarballs.jl
+
+
+deploy:
+    provider: releases
+    api_key:
+        # Note; this api_key is only valid for JuliaOpt/COINMetisBuilder; you need
+        # to make your own: https://docs.travis-ci.com/user/deployment/releases/
+        secure: l4VnYI0RIcHrZJjbzumskNObDp/FriVUICYgaiN0Cri7Iq+bLnnsWQF8kAE28zZGVKn6eM789UUvOA+aKCpRYGtABlW7SUji34KlY1fke9a8HoE3+UsHKCKcevrqmd9RNI9PZHh1JW/3D85j6Con6V7AjIPKBcxWUHGLjW0nExqXJes5ue/HPSvR4xnLgQAvKTekobySxYb6j5gLQ0B40k3iJBcEui+ejzA1BHQZ7cQkDzopbKsRNk0/4NhzOgqNBwxPAZbMiJr2QppKs4bCA+XfzSl1B89AsCpLVC48VplOf5kuh9FLXONsqYNbV4ypEsVanpC9GQB9Xv3FqkNrqr6bxyOCv7XZSTlAcCcCBACtJ2iFHdsoXhptNGwT14IdGwB9MiiRyUvqcQIVggF8ZVNK8r7HRFRuEvgvYHjCUGNjqiGLmUwmDlavj0w2MTAWBDzRU2gqph3hr664OEznmdkvhDpBU0G9wQTBu4C1VEN5Hyp0SM5Icz5vYcZm8QxVL601A0siABlJhNVPiD7AqpRel7XMNy/nDbTJO3fO5DV6oWbe2uEewcjwgemUNMsk26Ymb+TB1q+5jQrZWmn3cjpPZBzLmVGF8ojb8nmHp9V/BuDU34Q/0fR0ReBxGl0gxVhAdeD40vD0waW/Q4ISCpxiqZFr7Xbxz+eUkCrNXQ8=
+    file_glob: true
+    file: products/*
+    skip_cleanup: true
+    on:
+        repo: JuliaOpt/COINMetisBuilder
+        tags: true
